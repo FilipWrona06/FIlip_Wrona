@@ -139,10 +139,10 @@ export default function Navbar() {
   }
 
   return (
-    <div className="pointer-events-none fixed top-0 left-0 z-[1000] flex w-full justify-center">
+    <div className="pointer-events-none fixed top-0 left-0 z-1000 flex w-full justify-center">
       <div
         className={`pointer-events-auto relative transition-[width,margin-top] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-          scrolled ? "mt-4 w-[92%] max-w-[880px]" : "mt-0 w-full"
+          scrolled ? "mt-4 w-[92%] max-w-220" : "mt-0 w-full"
         }`}
         onMouseMove={handlePillMouseMove}
         onMouseLeave={handlePillMouseLeave}
@@ -153,7 +153,7 @@ export default function Navbar() {
           aria-hidden="true"
           className={`pointer-events-none absolute z-0 transition-[inset,opacity,border-radius] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
             scrolled
-              ? "-inset-[1.5px] rounded-full opacity-100"
+              ? "inset-[-1.5px] rounded-full opacity-100"
               : "inset-0 rounded-none opacity-0"
           }`}
           style={{
@@ -163,7 +163,7 @@ export default function Navbar() {
 
         <div
           ref={navPillInnerRef}
-          className={`relative z-[1] flex items-center justify-between gap-6 transition-[background,backdrop-filter,padding,border-radius,box-shadow] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+          className={`relative z-1 flex items-center justify-between gap-6 transition-[background,backdrop-filter,padding,border-radius,box-shadow] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
             scrolled
               ? "rounded-full bg-[#100f16]/55 px-6 py-3 backdrop-blur-xl backdrop-saturate-150 shadow-[0_10px_40px_rgba(0,0,0,0.45)]"
               : "rounded-none bg-transparent px-7 py-3.5 shadow-none"
@@ -196,7 +196,7 @@ export default function Navbar() {
                 }}
                 href={`#${link.target}`}
                 onMouseEnter={(e) => moveIndicatorTo(e.currentTarget)}
-                className={`relative z-[2] inline-block whitespace-nowrap rounded-full px-4 py-2 font-display text-sm font-medium transition-colors duration-300 ${
+                className={`relative z-2 inline-block whitespace-nowrap rounded-full px-4 py-2 font-display text-sm font-medium transition-colors duration-300 ${
                   activeSection === link.target
                     ? "text-white"
                     : "text-neutral-400 hover:text-white"
@@ -207,7 +207,7 @@ export default function Navbar() {
             ))}
             <span
               ref={indicatorRef}
-              className={`absolute top-0 z-[1] h-full rounded-full bg-gradient-to-b from-violet-400/35 to-violet-400/15 shadow-[0_0_20px_rgba(155,107,255,0.35),inset_0_0_0_1px_rgba(255,255,255,0.08)] transition-[left,width,opacity] duration-[450ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
+              className={`absolute top-0 z-1 h-full rounded-full bg-linear-to-b from-violet-400/35 to-violet-400/15 shadow-[0_0_20px_rgba(155,107,255,0.35),inset_0_0_0_1px_rgba(255,255,255,0.08)] transition-[left,width,opacity] duration-450 ease-[cubic-bezier(0.16,1,0.3,1)] ${
                 indicatorVisible ? "opacity-100" : "opacity-0"
               }`}
             />
@@ -217,7 +217,7 @@ export default function Navbar() {
           <a
             ref={ctaRef}
             href="#kontakt"
-            className="relative inline-block flex-none whitespace-nowrap rounded-full bg-gradient-to-br from-violet-300 to-violet-500 px-[22px] py-[11px] font-display text-sm font-semibold text-neutral-950 no-underline shadow-[0_4px_14px_rgba(155,107,255,0.25)] transition-[box-shadow,filter] duration-300 ease-out hover:shadow-[0_8px_28px_rgba(155,107,255,0.55),0_0_40px_rgba(155,107,255,0.3)] hover:brightness-[1.08] active:brightness-95"
+            className="relative inline-block flex-none whitespace-nowrap rounded-full bg-linear-to-br from-violet-300 to-violet-500 px-5.5 py-2.75 font-display text-sm font-semibold text-neutral-950 no-underline shadow-[0_4px_14px_rgba(155,107,255,0.25)] transition-[box-shadow,filter] duration-300 ease-out hover:shadow-[0_8px_28px_rgba(155,107,255,0.55),0_0_40px_rgba(155,107,255,0.3)] hover:brightness-[1.08] active:brightness-95"
             style={{
               transition:
                 "box-shadow .35s ease, filter .3s ease, transform .25s cubic-bezier(.2,.9,.3,1.2)",
