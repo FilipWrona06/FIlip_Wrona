@@ -16,14 +16,14 @@ export default function Home() {
         <p className="mb-4 font-display text-[13px] uppercase tracking-[0.15em] text-violet-300">
           Frontend Developer
         </p>
-        <h1 className="max-w-[900px] font-display text-[clamp(40px,7vw,84px)] font-bold leading-[1.02] tracking-tight">
+        <h1 className="max-w-225 font-display text-[clamp(40px,7vw,84px)] font-bold leading-[1.02] tracking-tight">
           Buduję interfejsy,
           <br />
-          <span className="bg-gradient-to-br from-white to-violet-300 bg-clip-text text-transparent">
+          <span className="bg-linear-to-br from-white to-violet-300 bg-clip-text text-transparent">
             które chce się dotykać.
           </span>
         </h1>
-        <p className="mt-6 max-w-[560px] text-lg leading-relaxed text-neutral-400">
+        <p className="mt-6 max-w-140 text-lg leading-relaxed text-neutral-400">
           Przewiń stronę, żeby zobaczyć jak navbar wypełnia się kolorem wraz z
           postępem scrolla.
         </p>
@@ -80,7 +80,7 @@ function DemoSection({
       <h2 className="mb-5 font-display text-[clamp(32px,5vw,56px)] font-semibold tracking-tight">
         {title}
       </h2>
-      <p className="max-w-[560px] text-lg leading-relaxed text-neutral-400">
+      <p className="max-w-140 text-lg leading-relaxed text-neutral-400">
         {children}
       </p>
     </section>

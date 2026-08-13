@@ -14,7 +14,7 @@ export default function Navbar() {
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [indicatorVisible, setIndicatorVisible] = useState(false);
 
-  const pillRef = useRef<HTMLDivElement>(null);
+  const svgRectRef = useRef<SVGRectElement>(null);
   const navLinksRef = useRef<HTMLUListElement>(null);
   const indicatorRef = useRef<HTMLSpanElement>(null);
   const linkRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
@@ -24,7 +24,7 @@ export default function Navbar() {
   const targetProgress = useRef(0);
   const currentProgress = useRef(0);
 
-  /* ---------- scroll: pill state + eased progress-fill border ---------- */
+  /* ---------- scroll calculation ---------- */
 
   useEffect(() => {
     function computeScroll() {
@@ -38,30 +38,43 @@ export default function Navbar() {
     let ticking = false;
     function onScroll() {
       if (!ticking) {
-        requestAnimationFrame(computeScroll);
+        requestAnimationFrame(() => {
+          computeScroll();
+          ticking = false;
+        });
         ticking = true;
       }
     }
 
     computeScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    window.addEventListener("resize", computeScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", computeScroll);
+    };
   }, []);
+
+  /* ---------- RAF loop for SVG stroke offset ---------- */
 
   useEffect(() => {
     let raf: number;
     function animate() {
       currentProgress.current +=
         (targetProgress.current - currentProgress.current) * 0.12;
-      if (Math.abs(targetProgress.current - currentProgress.current) < 0.0005) {
+
+      if (Math.abs(targetProgress.current - currentProgress.current) < 0.0001) {
         currentProgress.current = targetProgress.current;
       }
-      pillRef.current?.style.setProperty(
-        "--progress",
-        currentProgress.current.toFixed(4),
-      );
+
+      if (svgRectRef.current) {
+        const offset = (100 * (1 - currentProgress.current)).toFixed(2);
+        svgRectRef.current.style.strokeDashoffset = offset;
+      }
+
       raf = requestAnimationFrame(animate);
     }
+
     raf = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(raf);
   }, []);
@@ -108,14 +121,13 @@ export default function Navbar() {
     return () => observer.disconnect();
   }, []);
 
-  // keep indicator glued to the active link whenever it changes (and we're not hovering)
   useEffect(() => {
     if (!navLinksRef.current?.matches(":hover")) {
       moveIndicatorTo(activeSection ? linkRefs.current[activeSection] : null);
     }
   }, [activeSection]);
 
-  /* ---------- magnetic CTA, resets the instant the cursor leaves the pill ---------- */
+  /* ---------- magnetic CTA ---------- */
 
   function handlePillMouseMove(e: React.MouseEvent) {
     const btn = ctaRef.current;
@@ -141,43 +153,38 @@ export default function Navbar() {
   return (
     <div className="pointer-events-none fixed top-0 left-0 z-1000 flex w-full justify-center">
       <div
-        className={`pointer-events-auto relative transition-[width,margin-top] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-          scrolled ? "mt-4 w-[92%] max-w-220" : "mt-0 w-full"
+        className={`pointer-events-auto relative transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+          scrolled
+            ? "mt-4 w-[92%] max-w-220"
+            : "mt-0 w-full max-w-5xl px-6 sm:px-8"
         }`}
         onMouseMove={handlePillMouseMove}
         onMouseLeave={handlePillMouseLeave}
       >
-        {/* ring layer — separate absolutely-positioned element, peeks out around the glass card via negative inset */}
-        <div
-          ref={pillRef}
-          aria-hidden="true"
-          className={`pointer-events-none absolute z-0 transition-[inset,opacity,border-radius] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
-            scrolled
-              ? "inset-[-1.5px] rounded-full opacity-100"
-              : "inset-0 rounded-none opacity-0"
-          }`}
-          style={{
-            background: `conic-gradient(from -90deg, #9b6bff calc(var(--progress, 0) * 360deg), rgba(255,255,255,0.28) calc(var(--progress, 0) * 360deg))`,
-          }}
-        />
-
+        {/* Główny kontener navbaru */}
         <div
           ref={navPillInnerRef}
-          className={`relative z-1 flex items-center justify-between gap-6 transition-[background,backdrop-filter,padding,border-radius,box-shadow] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
+          className={`relative z-1 flex items-center justify-between gap-6 transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)] ${
             scrolled
-              ? "rounded-full bg-[#100f16]/55 px-6 py-3 backdrop-blur-xl backdrop-saturate-150 shadow-[0_10px_40px_rgba(0,0,0,0.45)]"
-              : "rounded-none bg-transparent px-7 py-3.5 shadow-none"
+              ? "rounded-full bg-[#100f16]/85 px-6 py-3 backdrop-blur-xl backdrop-saturate-150 shadow-[0_10px_40px_rgba(0,0,0,0.45)]"
+              : "rounded-full bg-transparent px-2 py-7 shadow-none backdrop-blur-none"
           }`}
         >
-          {/* ---- logo ---- */}
+          {/* ---- logo z efektem unoszenia i aury świetlnej ---- */}
           <a
             href="#hero"
-            className="group flex flex-none flex-col whitespace-nowrap font-display text-[15px] font-semibold leading-[1.05] tracking-tight text-white transition-transform duration-300 hover:-translate-y-px"
+            className="group relative flex flex-none flex-col whitespace-nowrap font-display text-[16px] font-semibold leading-[1.1] tracking-tight text-white transition-transform duration-300 ease-out hover:-translate-y-1"
           >
-            <span className="transition-[text-shadow,color] duration-300 group-hover:text-white group-hover:[text-shadow:0_0_18px_rgba(155,107,255,0.55),0_0_40px_rgba(155,107,255,0.25)]">
+            {/* Tło podświetlenia (Ambient Aura) rozwijające się przy hoverze */}
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute -inset-x-4 -inset-y-3 z-0 rounded-full bg-violet-500/0 blur-xl transition-all duration-500 ease-out group-hover:bg-violet-500/35 group-hover:blur-2xl group-hover:scale-125"
+            />
+
+            <span className="relative z-1 transition-[text-shadow,color,filter] duration-300 group-hover:text-white group-hover:[text-shadow:0_0_20px_rgba(155,107,255,0.8),0_0_40px_rgba(155,107,255,0.4)] group-hover:drop-shadow-[0_4px_12px_rgba(155,107,255,0.6)]">
               Filip
             </span>
-            <span className="text-neutral-400 transition-colors duration-300 group-hover:text-violet-300">
+            <span className="relative z-1 text-neutral-400 transition-colors duration-300 group-hover:text-violet-200">
               Wrona
             </span>
           </a>
@@ -186,7 +193,7 @@ export default function Navbar() {
           <ul
             ref={navLinksRef}
             onMouseLeave={handleMouseLeaveLinks}
-            className="relative flex list-none gap-1.5"
+            className="relative flex list-none gap-2"
           >
             {NAV_LINKS.map((link) => (
               <a
@@ -196,7 +203,7 @@ export default function Navbar() {
                 }}
                 href={`#${link.target}`}
                 onMouseEnter={(e) => moveIndicatorTo(e.currentTarget)}
-                className={`relative z-2 inline-block whitespace-nowrap rounded-full px-4 py-2 font-display text-sm font-medium transition-colors duration-300 ${
+                className={`relative z-2 inline-block whitespace-nowrap rounded-full px-4.5 py-2 font-display text-[14.5px] font-medium transition-colors duration-300 ${
                   activeSection === link.target
                     ? "text-white"
                     : "text-neutral-400 hover:text-white"
@@ -217,7 +224,7 @@ export default function Navbar() {
           <a
             ref={ctaRef}
             href="#kontakt"
-            className="relative inline-block flex-none whitespace-nowrap rounded-full bg-linear-to-br from-violet-300 to-violet-500 px-5.5 py-2.75 font-display text-sm font-semibold text-neutral-950 no-underline shadow-[0_4px_14px_rgba(155,107,255,0.25)] transition-[box-shadow,filter] duration-300 ease-out hover:shadow-[0_8px_28px_rgba(155,107,255,0.55),0_0_40px_rgba(155,107,255,0.3)] hover:brightness-[1.08] active:brightness-95"
+            className="relative inline-block flex-none whitespace-nowrap rounded-full bg-linear-to-br from-violet-300 to-violet-500 px-6 py-2.75 font-display text-[14.5px] font-semibold text-neutral-950 no-underline shadow-[0_4px_14px_rgba(155,107,255,0.25)] transition-[box-shadow,filter] duration-300 ease-out hover:shadow-[0_8px_28px_rgba(155,107,255,0.55),0_0_40px_rgba(155,107,255,0.3)] hover:brightness-[1.08] active:brightness-95"
             style={{
               transition:
                 "box-shadow .35s ease, filter .3s ease, transform .25s cubic-bezier(.2,.9,.3,1.2)",
@@ -226,6 +233,57 @@ export default function Navbar() {
             Skontaktuj się
           </a>
         </div>
+
+        {/* Warstwa obramówki SVG Path (dla pigułki po scrollu) */}
+        <svg
+          className={`pointer-events-none absolute inset-0 z-20 h-full w-full overflow-visible transition-opacity duration-500 ${
+            scrolled
+              ? "opacity-100 delay-300"
+              : "opacity-0 delay-0 pointer-events-none"
+          }`}
+        >
+          <defs>
+            <linearGradient
+              id="pill-stroke-grad"
+              x1="0%"
+              y1="0%"
+              x2="100%"
+              y2="0%"
+            >
+              <stop offset="0%" stopColor="#9b6bff" />
+              <stop offset="100%" stopColor="#c084fc" />
+            </linearGradient>
+          </defs>
+
+          {/* Szary tor pod spodem (2px) */}
+          <rect
+            x="1"
+            y="1"
+            width="calc(100% - 2px)"
+            height="calc(100% - 2px)"
+            rx="24"
+            fill="none"
+            stroke="rgba(255, 255, 255, 0.12)"
+            strokeWidth="2"
+          />
+
+          {/* Fioletowy pasek postępu */}
+          <rect
+            ref={svgRectRef}
+            x="1"
+            y="1"
+            width="calc(100% - 2px)"
+            height="calc(100% - 2px)"
+            rx="24"
+            pathLength="100"
+            fill="none"
+            stroke="url(#pill-stroke-grad)"
+            strokeWidth="2"
+            strokeDasharray="100"
+            strokeDashoffset="100"
+            strokeLinecap="round"
+          />
+        </svg>
       </div>
     </div>
   );
