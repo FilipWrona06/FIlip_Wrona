@@ -1,9 +1,44 @@
+"use client";
+
+import { useEffect } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+import Lenis from "lenis";
+
 import Hero from "@/components/landing/Hero";
 import Navbar from "@/components/layout/Navbar";
+import AmbientBackground from "@/components/layout/AmbientBackground";
 
 export default function Home() {
+  useEffect(() => {
+    // Płynny scroll Lenis połączony bezpośrednio z GSAP Ticker
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel: true,
+    });
+
+    lenis.on("scroll", ScrollTrigger.update);
+
+    const updateTicker = (time: number) => {
+      lenis.raf(time * 1000);
+    };
+
+    gsap.ticker.add(updateTicker);
+    gsap.ticker.lagSmoothing(0);
+
+    return () => {
+      gsap.ticker.remove(updateTicker);
+      lenis.destroy();
+    };
+  }, []);
+
   return (
-    <>
+    <main className="relative min-h-screen text-white selection:bg-violet-500/30 selection:text-violet-200">
+      {/* Dynamiczne tło reagujące wyłącznie na scroll */}
+      <AmbientBackground />
+
+      <Navbar />
 
       <Hero />
 
@@ -29,10 +64,10 @@ export default function Home() {
         wylądować właśnie tutaj.
       </DemoSection>
 
-      <footer className="border-t border-white/10 px-[8vw] py-16 text-sm text-neutral-400">
+      <footer className="border-t border-white/10 px-[8vw] py-16 text-sm text-neutral-400 backdrop-blur-sm">
         © 2026 Filip Wrona. Wszelkie prawa zastrzeżone.
       </footer>
-    </>
+    </main>
   );
 }
 
@@ -52,13 +87,13 @@ function DemoSection({
       id={id}
       className="relative flex min-h-screen flex-col items-start justify-center px-[8vw]"
     >
-      <span className="absolute right-[8vw] top-12 font-display text-[13px] tracking-[0.08em] text-neutral-400">
+      <span className="absolute right-[8vw] top-16 font-display text-[13px] tracking-[0.08em] text-neutral-400">
         {tag}
       </span>
-      <h2 className="mb-5 font-display text-[clamp(32px,5vw,56px)] font-semibold tracking-tight">
+      <h2 className="mb-5 font-display text-[clamp(32px,5vw,56px)] font-semibold tracking-tight text-white">
         {title}
       </h2>
-      <p className="max-w-140 text-lg leading-relaxed text-neutral-400">
+      <p className="max-w-[560px] text-lg leading-relaxed text-neutral-300">
         {children}
       </p>
     </section>
